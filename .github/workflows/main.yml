@@ -1,0 +1,104 @@
+name: Sky
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  run-chiner:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        bot_id: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+        include:
+          - bot_id: 1
+            os: macos-latest
+          - bot_id: 2
+            os: windows-latest
+          - bot_id: 3
+            os: ubuntu-latest
+          - bot_id: 4
+            os: ubuntu-latest
+          - bot_id: 5
+            os: ubuntu-latest
+          - bot_id: 6
+            os: ubuntu-latest
+          - bot_id: 7
+            os: ubuntu-latest
+          - bot_id: 8
+            os: ubuntu-latest
+          - bot_id: 9
+            os: ubuntu-latest
+          - bot_id: 10
+            os: ubuntu-latest
+          - bot_id: 11
+            os: ubuntu-latest
+          - bot_id: 12
+            os: ubuntu-latest
+          - bot_id: 13
+            os: ubuntu-latest
+          - bot_id: 14
+            os: ubuntu-latest
+          - bot_id: 15
+            os: ubuntu-latest
+          - bot_id: 16
+            os: ubuntu-latest
+          - bot_id: 17
+            os: ubuntu-latest
+          - bot_id: 18
+            os: ubuntu-latest
+          - bot_id: 19
+            os: ubuntu-latest
+          - bot_id: 20
+            os: ubuntu-latest
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install selenium packaging
+
+      # ── Firefox: Ubuntu ──
+      - name: Setup Firefox (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: browser-actions/setup-firefox@v1
+
+      # ── Firefox: macOS (brew) ──
+      - name: Setup Firefox (macOS)
+        if: runner.os == 'macOS'
+        run: brew install --cask firefox
+
+      # ── Firefox: Windows (choco) ──
+      - name: Setup Firefox (Windows)
+        if: runner.os == 'Windows'
+        run: choco install firefox -y
+        shell: bash
+
+      - name: Run bot
+        timeout-minutes: 340
+        env:
+          GH_REPO:   ${{ github.event.repository.name }}
+          MATRIX_ID: ${{ matrix.bot_id }}
+        run: |
+            sed -i 's/\r$//' enchopy.sh || true
+            chmod +x enchopy.sh || true
+            ./enchopy.sh || true
+
+      - name: Auto-restart
+        if: always() && matrix.bot_id == 2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          sleep 10
+          gh workflow run "${{ github.workflow }}" \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref_name }}"
